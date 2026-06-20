@@ -29,8 +29,8 @@ No RMA system, no extra steps, nothing wired into the order workflow — by desi
 | **Auto pre‑fill** | For logged‑in customers: name, e‑mail and a drop‑down of their orders. |
 | **Acknowledgement e‑mails** | Customer + merchant, HTML and plain‑text, EN + SL templates. |
 | **Back‑office register** | List, filter, status (*Received / Processing / Completed*), internal note, CSV export. |
-| **Friendly URL** | `/odstop-od-pogodbe` (slug configurable) via the `moduleRoutes` hook. |
-| **i18n** | English + Slovenian out of the box; everything else translatable. |
+| **Friendly URL** | Per‑language slug via `moduleRoutes` — e.g. `/si/odstop-od-pogodbe`, `/en/withdrawal-from-contract`, `/hr/odustanak-od-ugovora`, `/de/widerruf-des-vertrags`. Each slug is editable per language in the config. |
+| **i18n** | Ships native translations for **11 locales**: en, sl, si, hr, cs, hu, it, sk, de, fr, es (PrestaShop `$_MODULE` format, official EU consumer‑law terminology). Link text, intro and slug default to native per language. |
 | **Spam guard** | Honeypot field; e‑mails only ever go to the order's real customer address. |
 
 ## Requirements

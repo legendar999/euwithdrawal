@@ -76,13 +76,24 @@ translations/{en,sl}.php                 module `$_MODULE` strings (generated, s
   file** — it routes to `getAdminTranslation` (core admin pack), so BO strings are
   auto‑translated where the core pack has them and fall back to English otherwise.
 
-## Translations workflow
+## Translations & per-language slugs
 
-`translations/en.php` and `sl.php` are **generated** by `../gen_i18n.php` (kept in
-the workspace root, not shipped). It mirrors PS's md5 key derivation exactly. To
-add/edit a string: edit the `$rows` table in `gen_i18n.php`, run
-`"C:/xampp/php/php.exe" gen_i18n.php`, commit the regenerated files. EN value must
-match the in‑code string byte‑for‑byte or the key won't match.
+Ships **11 locales**: en, sl, si, hr, cs, hu, it, sk, de, fr, es. The
+`translations/{iso}.php` files are **generated** by `../gen_i18n.php` (workspace
+root, not shipped) which mirrors PS's md5 key derivation exactly. Source strings
+live in `gen_i18n.php`: `$rows` = [source, en, sl]; `$EN` = the canonical ordered
+English list; `$T[iso]` = per-language arrays in the SAME order as `$EN`. To
+add/edit: update those, run `"C:/xampp/php/php.exe" gen_i18n.php`, commit. EN must
+match the in-code string byte-for-byte.
+
+Per-language **link label / intro / slug** defaults live in
+`Euwithdrawal::i18nDefaults($iso)` (PHP). `EUWITHDRAWAL_LINK_LABEL`, `_INTRO` and
+`_SLUG` are all **multilang** config. Friendly URLs are per-language:
+`hookModuleRoutes` registers one route per language (`module-euwithdrawal-withdrawal-{id_lang}`
++ a primary), and `getWithdrawalLink($id_lang)` builds `getBaseLink()+iso/+slug`
+manually (PS 1.6 applies one route rule across all langs, so getModuleLink can't do
+per-lang slugs). The FO controller's form action uses `$this->module->getWithdrawalLink()`.
+NOTE: `Link::getLangLink()` is protected — we replicate its `iso/` logic.
 
 ## Config keys (`Configuration`)
 

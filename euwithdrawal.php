@@ -29,7 +29,7 @@ class Euwithdrawal extends Module
     {
         $this->name = 'euwithdrawal';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->author = 'Andriy Gryban';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -111,17 +111,19 @@ class Euwithdrawal extends Module
         Configuration::updateValue('EUWITHDRAWAL_NOTIFY_CUSTOMER', 1);
         Configuration::updateValue('EUWITHDRAWAL_NOTIFY_MERCHANT', 1);
         Configuration::updateValue('EUWITHDRAWAL_MERCHANT_EMAIL', '');
-        Configuration::updateValue('EUWITHDRAWAL_SLUG', 'odstop-od-pogodbe');
 
         $label = array();
         $intro = array();
+        $slug = array();
         foreach ($this->getLangs() as $lang) {
             $iso = Tools::strtolower($lang['iso_code']);
             $label[$lang['id_lang']] = $this->defaultLabel($iso);
             $intro[$lang['id_lang']] = $this->defaultIntro($iso);
+            $slug[$lang['id_lang']] = $this->defaultSlug($iso);
         }
         Configuration::updateValue('EUWITHDRAWAL_LINK_LABEL', $label);
         Configuration::updateValue('EUWITHDRAWAL_INTRO', $intro, true);
+        Configuration::updateValue('EUWITHDRAWAL_SLUG', $slug);
 
         return true;
     }
@@ -156,8 +158,7 @@ class Euwithdrawal extends Module
         }
         $tab->name = array();
         foreach (Language::getLanguages(false) as $lang) {
-            $iso = Tools::strtolower($lang['iso_code']);
-            $tab->name[$lang['id_lang']] = ($iso === 'sl') ? 'Odstop od pogodbe' : 'Withdrawals';
+            $tab->name[$lang['id_lang']] = $this->defaultLabel(Tools::strtolower($lang['iso_code']));
         }
         return (bool)$tab->add();
     }
@@ -216,34 +217,68 @@ class Euwithdrawal extends Module
         return $this->display(__FILE__, 'views/templates/hook/footer_link.tpl');
     }
 
-    /** Clean friendly URL: /<slug> (default /odstop-od-pogodbe). */
+    /**
+     * Clean friendly URLs, one per language (e.g. /odstop-od-pogodbe, /withdrawal-from-contract,
+     * /odustanak-od-ugovora). PS 1.6 applies one rule per route id across all languages, so we
+     * register a separate route per language; all resolve to the same controller.
+     */
     public function hookModuleRoutes($params)
     {
-        $slug = Configuration::get('EUWITHDRAWAL_SLUG');
-        if (!$slug) {
-            $slug = 'odstop-od-pogodbe';
-        }
-        return array(
+        $p = array('fc' => 'module', 'module' => 'euwithdrawal', 'controller' => 'withdrawal');
+        $routes = array(
+            // Primary route (default-language slug) so Link::getModuleLink() still resolves.
             'module-euwithdrawal-withdrawal' => array(
                 'controller' => 'withdrawal',
-                'rule'       => $slug,
+                'rule'       => $this->getSlug((int)Configuration::get('PS_LANG_DEFAULT')),
                 'keywords'   => array(),
-                'params'     => array(
-                    'fc'         => 'module',
-                    'module'     => 'euwithdrawal',
-                    'controller' => 'withdrawal',
-                ),
+                'params'     => $p,
             ),
         );
+        foreach (Language::getLanguages(false) as $lang) {
+            $routes['module-euwithdrawal-withdrawal-'.(int)$lang['id_lang']] = array(
+                'controller' => 'withdrawal',
+                'rule'       => $this->getSlug((int)$lang['id_lang']),
+                'keywords'   => array(),
+                'params'     => $p,
+            );
+        }
+        return $routes;
     }
 
     /* ===================================================================== */
     /*  HELPERS                                                               */
     /* ===================================================================== */
 
+    /** The per-language friendly URL of the withdrawal page (falls back to fc=module). */
     public function getWithdrawalLink($id_lang = null)
     {
+        if ($id_lang === null) {
+            $id_lang = (int)$this->context->language->id;
+        }
+        if ((int)Configuration::get('PS_REWRITING_SETTINGS')) {
+            $prefix = '';
+            if (Language::isMultiLanguageActivated()) {
+                $iso = Language::getIsoById($id_lang);
+                if ($iso) {
+                    $prefix = $iso.'/';
+                }
+            }
+            return $this->context->link->getBaseLink().$prefix.$this->getSlug($id_lang);
+        }
         return $this->context->link->getModuleLink('euwithdrawal', 'withdrawal', array(), null, $id_lang);
+    }
+
+    /** The configured (or default) URL slug for a language. */
+    public function getSlug($id_lang = null)
+    {
+        if ($id_lang === null) {
+            $id_lang = (int)$this->context->language->id;
+        }
+        $slug = Configuration::get('EUWITHDRAWAL_SLUG', $id_lang);
+        if (!$slug) {
+            $slug = $this->defaultSlug(Tools::strtolower((string)Language::getIsoById($id_lang)));
+        }
+        return $slug ? $slug : 'odstop-od-pogodbe';
     }
 
     public function getLinkLabel($id_lang = null)
@@ -269,28 +304,54 @@ class Euwithdrawal extends Module
         return $this->langs;
     }
 
+    /**
+     * Per-language defaults for the link label, URL slug and intro text.
+     * Double-quoted strings: values contain apostrophes/diacritics but no ", $ or \.
+     */
+    protected function i18nDefaults($iso)
+    {
+        $d = array(
+            'sl' => array('label' => "Odstop od pogodbe", 'slug' => "odstop-od-pogodbe",
+                'intro' => "Tu lahko odstopite od pogodbe, sklenjene na daljavo. Vnesite svoje podatke in številko naročila, na naslednjem koraku pa odstop potrdite. Po oddaji boste na svoj e-naslov prejeli samodejno potrdilo o prejemu zahtevka."),
+            'en' => array('label' => "Withdrawal from contract", 'slug' => "withdrawal-from-contract",
+                'intro' => "Here you can withdraw from a distance contract. Enter your details and order number; on the next step you confirm the withdrawal. After submitting you will receive an automatic acknowledgement of receipt at your e-mail address."),
+            'hr' => array('label' => "Odustanak od ugovora", 'slug' => "odustanak-od-ugovora",
+                'intro' => "Ovdje možete odustati od ugovora sklopljenog na daljinu. Unesite svoje podatke i broj narudžbe, potvrdite u sljedećem koraku i e-mailom ćete primiti automatsku potvrdu o primitku."),
+            'cs' => array('label' => "Odstoupení od smlouvy", 'slug' => "odstoupeni-od-smlouvy",
+                'intro' => "Zde můžete odstoupit od smlouvy uzavřené na dálku. Vyplňte své údaje a číslo objednávky, v dalším kroku odstoupení potvrďte a automaticky obdržíte e-mailem potvrzení o jeho přijetí."),
+            'hu' => array('label' => "Elállás a szerződéstől", 'slug' => "elallas-a-szerzodestol",
+                'intro' => "Itt állhat el a távollévők között kötött szerződéstől. Adja meg az adatait és a rendelésszámát, a következő lépésben erősítse meg az elállást, és a kézhezvételről automatikus visszaigazolást küldünk e-mailben."),
+            'it' => array('label' => "Recesso dal contratto", 'slug' => "recesso-dal-contratto",
+                'intro' => "Qui puoi esercitare il diritto di recesso da un contratto a distanza. Inserisci i tuoi dati e il numero d'ordine, conferma nel passaggio successivo e riceverai automaticamente una conferma di ricezione via e-mail."),
+            'sk' => array('label' => "Odstúpenie od zmluvy", 'slug' => "odstupenie-od-zmluvy",
+                'intro' => "Tu môžete odstúpiť od zmluvy uzavretej na diaľku. Zadajte svoje údaje a číslo objednávky, v ďalšom kroku odstúpenie potvrďte a my vám e-mailom automaticky pošleme potvrdenie o prijatí."),
+            'de' => array('label' => "Widerruf des Vertrags", 'slug' => "widerruf-des-vertrags",
+                'intro' => "Hier können Sie Ihren Widerruf eines Fernabsatzvertrags erklären. Geben Sie Ihre Daten und Ihre Bestellnummer ein, bestätigen Sie im nächsten Schritt, und Sie erhalten automatisch eine Empfangsbestätigung per E-Mail."),
+            'fr' => array('label' => "Rétractation du contrat", 'slug' => "retractation-du-contrat",
+                'intro' => "Vous pouvez ici vous rétracter d'un contrat conclu à distance. Saisissez vos informations et votre numéro de commande, confirmez à l'étape suivante, et vous recevrez automatiquement un accusé de réception par e-mail."),
+            'es' => array('label' => "Desistimiento del contrato", 'slug' => "desistimiento-del-contrato",
+                'intro' => "Aquí puede ejercer su derecho de desistimiento de un contrato a distancia. Introduzca sus datos y el número de pedido, confirme en el siguiente paso y recibirá un acuse de recibo automático por correo electrónico."),
+        );
+        $d['si'] = $d['sl']; // some PS installs use the 'si' iso for Slovenian
+        return isset($d[$iso]) ? $d[$iso] : $d['en'];
+    }
+
     protected function defaultLabel($iso)
     {
-        $map = array(
-            'sl' => 'Odstop od pogodbe',
-            'si' => 'Odstop od pogodbe', // some PS installs use the 'si' iso for Slovenian
-            'en' => 'Withdrawal from contract',
-            'hr' => 'Odustanak od ugovora',
-            'de' => 'Widerruf des Vertrags',
-            'it' => 'Recesso dal contratto',
-        );
-        return isset($map[$iso]) ? $map[$iso] : $map['en'];
+        $d = $this->i18nDefaults($iso);
+        return $d['label'];
     }
 
     protected function defaultIntro($iso)
     {
-        $sl = 'Tu lahko odstopite od pogodbe, sklenjene na daljavo. Vnesite svoje podatke in '
-            .'številko naročila, na naslednjem koraku pa odstop potrdite. Po oddaji boste na svoj '
-            .'e-naslov prejeli samodejno potrdilo o prejemu zahtevka.';
-        $en = 'Here you can withdraw from a distance contract. Enter your details and order number; '
-            .'on the next step you confirm the withdrawal. After submitting you will receive an '
-            .'automatic acknowledgement of receipt at your e-mail address.';
-        return ($iso === 'sl' || $iso === 'si') ? $sl : $en;
+        $d = $this->i18nDefaults($iso);
+        return $d['intro'];
+    }
+
+    protected function defaultSlug($iso)
+    {
+        $d = $this->i18nDefaults($iso);
+        return $d['slug'];
     }
 
     /* ===================================================================== */
@@ -325,21 +386,19 @@ class Euwithdrawal extends Module
         }
         Configuration::updateValue('EUWITHDRAWAL_MERCHANT_EMAIL', pSQL($email));
 
-        $slug = Tools::link_rewrite(Tools::getValue('EUWITHDRAWAL_SLUG'));
-        if (!$slug) {
-            $slug = 'odstop-od-pogodbe';
-        }
-        Configuration::updateValue('EUWITHDRAWAL_SLUG', $slug);
-
         $label = array();
         $intro = array();
+        $slug = array();
         foreach ($this->getLangs() as $lang) {
             $id = (int)$lang['id_lang'];
             $label[$id] = (string)Tools::getValue('EUWITHDRAWAL_LINK_LABEL_'.$id);
             $intro[$id] = (string)Tools::getValue('EUWITHDRAWAL_INTRO_'.$id);
+            $s = Tools::link_rewrite(Tools::getValue('EUWITHDRAWAL_SLUG_'.$id));
+            $slug[$id] = $s ? $s : $this->defaultSlug(Tools::strtolower($lang['iso_code']));
         }
         Configuration::updateValue('EUWITHDRAWAL_LINK_LABEL', $label);
         Configuration::updateValue('EUWITHDRAWAL_INTRO', $intro, true);
+        Configuration::updateValue('EUWITHDRAWAL_SLUG', $slug);
 
         // Friendly URLs cache may need to forget old routes.
         Tools::clearSmartyCache();
@@ -408,6 +467,7 @@ class Euwithdrawal extends Module
                         'type'   => 'text',
                         'label'  => $this->l('Friendly URL slug'),
                         'name'   => 'EUWITHDRAWAL_SLUG',
+                        'lang'   => true,
                         'desc'   => $this->l('Used when Friendly URLs are enabled. Default: odstop-od-pogodbe'),
                         'prefix' => '<i class="icon-link"></i>',
                     ),
@@ -461,13 +521,13 @@ class Euwithdrawal extends Module
             'EUWITHDRAWAL_NOTIFY_CUSTOMER'  => Tools::getValue('EUWITHDRAWAL_NOTIFY_CUSTOMER', Configuration::get('EUWITHDRAWAL_NOTIFY_CUSTOMER')),
             'EUWITHDRAWAL_NOTIFY_MERCHANT'  => Tools::getValue('EUWITHDRAWAL_NOTIFY_MERCHANT', Configuration::get('EUWITHDRAWAL_NOTIFY_MERCHANT')),
             'EUWITHDRAWAL_MERCHANT_EMAIL'   => Tools::getValue('EUWITHDRAWAL_MERCHANT_EMAIL', Configuration::get('EUWITHDRAWAL_MERCHANT_EMAIL')),
-            'EUWITHDRAWAL_SLUG'             => Tools::getValue('EUWITHDRAWAL_SLUG', Configuration::get('EUWITHDRAWAL_SLUG')),
         );
         // Multilang values.
         foreach ($this->getLangs() as $lang) {
             $id = (int)$lang['id_lang'];
             $values['EUWITHDRAWAL_LINK_LABEL'][$id] = Tools::getValue('EUWITHDRAWAL_LINK_LABEL_'.$id, Configuration::get('EUWITHDRAWAL_LINK_LABEL', $id));
             $values['EUWITHDRAWAL_INTRO'][$id]      = Tools::getValue('EUWITHDRAWAL_INTRO_'.$id, Configuration::get('EUWITHDRAWAL_INTRO', $id));
+            $values['EUWITHDRAWAL_SLUG'][$id]       = Tools::getValue('EUWITHDRAWAL_SLUG_'.$id, $this->getSlug($id));
         }
         return $values;
     }

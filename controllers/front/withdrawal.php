@@ -35,7 +35,7 @@ class EuwithdrawalWithdrawalModuleFrontController extends ModuleFrontController
         // Optionally force login (off by default - the law expects open access).
         $this->auth = (bool)Configuration::get('EUWITHDRAWAL_REQUIRE_LOGIN');
         if ($this->auth) {
-            $this->authRedirection = $this->context->link->getModuleLink('euwithdrawal', 'withdrawal');
+            $this->authRedirection = $this->module->getWithdrawalLink();
         }
         parent::init();
     }
@@ -92,7 +92,7 @@ class EuwithdrawalWithdrawalModuleFrontController extends ModuleFrontController
 
         $this->context->smarty->assign(array(
             'euw_title'       => $this->module->getLinkLabel(),
-            'euw_action'      => $this->context->link->getModuleLink('euwithdrawal', 'withdrawal'),
+            'euw_action'      => $this->module->getWithdrawalLink(),
             'euw_data'        => $this->data,
             'euw_order'       => $order,
             'euw_products'    => $products,
@@ -184,7 +184,7 @@ class EuwithdrawalWithdrawalModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign(array(
             'euw_title'    => $this->module->getLinkLabel(),
             'euw_intro'    => Configuration::get('EUWITHDRAWAL_INTRO', (int)$this->context->language->id),
-            'euw_action'   => $this->context->link->getModuleLink('euwithdrawal', 'withdrawal'),
+            'euw_action'   => $this->module->getWithdrawalLink(),
             'euw_data'     => $prefill,
             'euw_orders'   => $customer_orders,
             'euw_errors'   => $this->errors_list,

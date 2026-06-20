@@ -2,7 +2,7 @@
 <module>
 	<name>euwithdrawal</name>
 	<displayName><![CDATA[EU Withdrawal - Odstop od pogodbe]]></displayName>
-	<version><![CDATA[1.0.0]]></version>
+	<version><![CDATA[1.1.0]]></version>
 	<description><![CDATA[EU right-of-withdrawal button & form (Directive (EU) 2023/2673). Footer/header/floating link to a 2-step withdrawal page, confirmation e-mails to customer and merchant, and a back-office register of requests.]]></description>
 	<author><![CDATA[Andriy Gryban]]></author>
 	<tab><![CDATA[front_office_features]]></tab>
