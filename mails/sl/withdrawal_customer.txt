@@ -1,0 +1,15 @@
+Spoštovani {firstname} {lastname},
+
+prejeli smo vaš ODSTOP OD POGODBE za naročilo {order_reference}.
+
+Datum zahtevka:       {request_date}
+Obseg odstopa:        {scope}
+Izdelki:              {items}
+Datum prejema blaga:  {date_received}
+Razlog:               {reason}
+
+To e-sporočilo je vaše potrdilo o prejemu zahtevka. O nadaljnjih korakih boste obveščeni.
+
+Sklic: {order_reference} | Št. zahtevka: {request_id}
+
+{shop_name}

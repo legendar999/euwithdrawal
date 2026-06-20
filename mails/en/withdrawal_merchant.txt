@@ -1,0 +1,14 @@
+NEW WITHDRAWAL REQUEST #{request_id}
+
+Received:             {request_date}
+Customer:             {firstname} {lastname} <{email}>
+Order:                {order_reference} (ID {order_id})
+Withdrawal scope:     {scope}
+Items:                {items}
+Date goods received:  {date_received}
+Reason:               {reason}
+
+Open the register in the back office:
+{customer_link}
+
+{shop_name}

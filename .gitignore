@@ -1,0 +1,11 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Logs / local
+*.log
+
+# Never ship local install/diagnostic helpers
+_euw_*.php

@@ -1,0 +1,15 @@
+Dear {firstname} {lastname},
+
+We have received your WITHDRAWAL FROM THE CONTRACT for order {order_reference}.
+
+Date of request:      {request_date}
+Withdrawal scope:     {scope}
+Items:                {items}
+Date goods received:  {date_received}
+Reason:               {reason}
+
+This e-mail is your acknowledgement of receipt. You will be informed about the next steps.
+
+Reference: {order_reference} | Request no.: {request_id}
+
+{shop_name}

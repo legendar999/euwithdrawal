@@ -1,0 +1,14 @@
+NOV ZAHTEVEK ZA ODSTOP OD POGODBE #{request_id}
+
+Prejeto:              {request_date}
+Stranka:              {firstname} {lastname} <{email}>
+Naročilo:             {order_reference} (ID {order_id})
+Obseg odstopa:        {scope}
+Izdelki:              {items}
+Datum prejema blaga:  {date_received}
+Razlog:               {reason}
+
+Odpri evidenco v administraciji:
+{customer_link}
+
+{shop_name}

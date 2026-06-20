@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>New withdrawal request</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#333;">
+	<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:20px 0;">
+		<tr><td align="center">
+			<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e0e0e0;">
+				<tr>
+					<td align="center" style="padding:20px;border-bottom:1px solid #eee;">
+						<a href="{shop_url}"><img src="{shop_logo}" alt="{shop_name}" /></a>
+					</td>
+				</tr>
+				<tr>
+					<td style="padding:24px;">
+						<h2 style="margin:0 0 12px;font-size:18px;">New withdrawal request #{request_id}</h2>
+						<table cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;margin:12px 0;">
+							<tr><td style="color:#888;width:180px;">Received</td><td>{request_date}</td></tr>
+							<tr><td style="color:#888;">Customer</td><td>{firstname} {lastname} &lt;{email}&gt;</td></tr>
+							<tr><td style="color:#888;">Order</td><td>{order_reference} (ID {order_id})</td></tr>
+							<tr><td style="color:#888;">Withdrawal scope</td><td>{scope}</td></tr>
+							<tr><td style="color:#888;">Items</td><td>{items}</td></tr>
+							<tr><td style="color:#888;">Date goods received</td><td>{date_received}</td></tr>
+							<tr><td style="color:#888;">Reason</td><td>{reason}</td></tr>
+						</table>
+						<p><a href="{customer_link}" style="background:#2b3947;color:#fff;padding:10px 16px;text-decoration:none;border-radius:4px;">Open the register in the back office</a></p>
+					</td>
+				</tr>
+				<tr>
+					<td style="padding:16px 24px;border-top:1px solid #eee;color:#999;font-size:12px;">
+						{shop_name}
+					</td>
+				</tr>
+			</table>
+		</td></tr>
+	</table>
+</body>
+</html>
