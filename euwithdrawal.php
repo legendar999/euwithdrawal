@@ -273,6 +273,7 @@ class Euwithdrawal extends Module
     {
         $map = array(
             'sl' => 'Odstop od pogodbe',
+            'si' => 'Odstop od pogodbe', // some PS installs use the 'si' iso for Slovenian
             'en' => 'Withdrawal from contract',
             'hr' => 'Odustanak od ugovora',
             'de' => 'Widerruf des Vertrags',
@@ -289,7 +290,7 @@ class Euwithdrawal extends Module
         $en = 'Here you can withdraw from a distance contract. Enter your details and order number; '
             .'on the next step you confirm the withdrawal. After submitting you will receive an '
             .'automatic acknowledgement of receipt at your e-mail address.';
-        return ($iso === 'sl') ? $sl : $en;
+        return ($iso === 'sl' || $iso === 'si') ? $sl : $en;
     }
 
     /* ===================================================================== */

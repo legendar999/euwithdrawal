@@ -95,14 +95,21 @@ match the in‑code string byte‑for‑byte or the key won't match.
 
 * **Lint**: `for f in $(find euwithdrawal -name '*.php'); do "C:/xampp/php/php.exe" -l "$f"; done`
 * **Reference PS 1.6 source**: `../prestashop/` (read‑only).
-* **Test site** (PS 1.6, default‑bootstrap, sample data): `oldakvavent.gribanica.eu`
-  — deploy via **FTP**, install/configure via **BO**. Creds in `../.env`
-  (`TESTING_*`). **Never test on production akvavent.si.**
-* The test site had an `http↔https` canonical redirect loop (Hostinger forces
-  https, PS canonical pointed to http). If the FO won't load, fix the shop's
-  `PS_SSL_ENABLED` / `shop_url` before testing — don't change module code for it.
-* **Production** akvavent.si numbers orders `000000000` (zero‑padded id). Confirm
-  the live theme renders `displayFooter`; if not, use header/floating placement.
+* **Test site** (PS 1.6.1.18, default‑bootstrap): `oldakvavent.gribanica.eu` —
+  deploy via plain **FTP**, install/configure via **BO**. Creds in `../.env`
+  (`TESTING_*`). Had an `http↔https` canonical loop (Hostinger forces https, PS
+  canonical pointed to http) — broke it with `PS_CANONICAL_REDIRECT=0`.
+* **Production** akvavent.si (PS 1.6.1.18, default‑bootstrap, friendly URLs ON):
+  - **FTPS required** — `curl --ssl-reqd` (plain FTP returns "550 SSL/TLS required").
+  - Web root `public_html/`, modules `public_html/modules/`, admin `admin407ed3f51`.
+  - **Slovenian uses iso_code `si`, not `sl`** (langs: si,en,hr,cs,hu,it,sk). PS loads
+    `translations/si.php`; install defaults key off `si`. The module ships BOTH
+    `sl.php` and `si.php` and treats both isos as Slovenian (`defaultLabel`/`defaultIntro`).
+  - Orders use a zero‑padded reference == id (`000007626`). Friendly URL is
+    `/si/odstop-od-pogodbe` (lang prefix + moduleRoutes).
+  - Install via BO module list (no bypass scripts on the live site).
+* **`Db::getRow()`/`getValue()` auto‑append `LIMIT 1`** — never put `LIMIT 1` in a
+  query passed to them (findOrder bug, fixed: `LIMIT 1 LIMIT 1` = SQL syntax error).
 
 ## Conventions
 
@@ -116,7 +123,14 @@ match the in‑code string byte‑for‑byte or the key won't match.
 
 ## Status
 
-* **v1.0.0** — built 2026‑06‑20. Feature‑complete; PHP‑lint clean.
-* TODO log: see commit history. Open: live deploy to akvavent.si (custom theme
-  footer‑hook check), optional per‑language route slug, optional GDPR‑safe
-  "keep table on uninstall" toggle.
+* **v1.0.0** — built & **LIVE on akvavent.si** 2026‑06‑20. Also fully tested
+  end‑to‑end on the test site (install, FO 3‑step flow, both e‑mails, BO register,
+  negative + honeypot). PHP‑lint clean; adversarial review (17 agents) = 0 confirmed
+  serious issues.
+* Production verified: `/si/odstop-od-pogodbe` (Slovenian), footer link, BO register,
+  bogus‑lookup rejected. A REAL withdrawal was **not** submitted on prod (would
+  e‑mail a real customer) — that path is proven on the test site only.
+* Merchant notifications go to `PS_SHOP_EMAIL` unless `EUWITHDRAWAL_MERCHANT_EMAIL`
+  is set in BO config — confirm the desired address with the owner.
+* Open: per‑language route slug; optional GDPR‑safe "keep table on uninstall" toggle;
+  translations for cs/hu/sk/it/hr (currently fall back to English).
