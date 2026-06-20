@@ -1,17 +1,19 @@
 <?php
+
 /**
  * euwithdrawal - table creation. Loaded by Euwithdrawal::runSqlFile().
  *
- * @license AFL-3.0
+ * @author    Andriy Gryban
+ * @copyright 2026 Andriy Gryban
+ * @license   AFL-3.0  http://opensource.org/licenses/afl-3.0.php
  */
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-$sql = array();
+$sql = [];
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'euwithdrawal` (
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'euwithdrawal` (
     `id_euwithdrawal` int(10) unsigned NOT NULL auto_increment,
     `id_shop` int(10) unsigned NOT NULL DEFAULT 1,
     `id_customer` int(10) unsigned NOT NULL DEFAULT 0,
@@ -33,4 +35,4 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'euwithdrawal` (
     KEY `id_order` (`id_order`),
     KEY `email` (`email`),
     KEY `status` (`status`)
-) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
+) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';

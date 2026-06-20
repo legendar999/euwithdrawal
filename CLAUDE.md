@@ -100,11 +100,25 @@ NOTE: `Link::getLangLink()` is protected — we replicate its `iso/` logic.
 `EUWITHDRAWAL_SHOW_FOOTER|SHOW_HEADER|SHOW_FLOATING|PREFILL|ALLOW_ITEMS|`
 `REQUIRE_LOGIN|NOTIFY_CUSTOMER|NOTIFY_MERCHANT` (bool),
 `EUWITHDRAWAL_MERCHANT_EMAIL`, `EUWITHDRAWAL_SLUG`,
-`EUWITHDRAWAL_LINK_LABEL` (multilang), `EUWITHDRAWAL_INTRO` (multilang, html).
+`EUWITHDRAWAL_LINK_LABEL` (multilang), `EUWITHDRAWAL_INTRO` (multilang).
+NOTE: `form.tpl` outputs the intro via `{$euw_intro|escape:'html':'UTF-8'|nl2br}`
+(escaped text + line breaks, **not raw HTML**) — required by the PrestaShop Addons
+validator, which rejects `nofilter`. Don't put HTML markup in the intro; it renders
+as text.
 
 ## Build / lint / deploy / test
 
 * **Lint**: `for f in $(find euwithdrawal -name '*.php'); do "C:/xampp/php/php.exe" -l "$f"; done`
+* **Coding standards** (Addons validator parity): php-cs-fixer with `@Symfony` +
+  `concat_space => one` + `cast_spaces => single` (the PrestaShop standalone ruleset;
+  NO `header_comment` — license tags are checked separately, and `@Symfony` requires
+  the blank line after `<?php` that `header_comment` would suppress). Tooling lives
+  outside the repo at `C:/Users/andig/.pscs-tools/` (`.php-cs-fixer-test.php` = the
+  real config). License headers must be `@author`, `@copyright`, `@license` **in that
+  order** in every PHP file. Translations are excluded from php-cs-fixer; their only CS
+  fix (`$_MODULE = [];`) comes from `../gen_i18n.php`. Distributable zip:
+  `git archive --format=zip --prefix=euwithdrawal/ HEAD -o euwithdrawal-<ver>.zip`
+  (root folder MUST be `euwithdrawal/`; dev files are `export-ignore`'d in `.gitattributes`).
 * **Reference PS 1.6 source**: `../prestashop/` (read‑only).
 * **Test site** (PS 1.6.1.18, default‑bootstrap): `oldakvavent.gribanica.eu` —
   deploy via plain **FTP**, install/configure via **BO**. Creds in `../.env`
@@ -134,6 +148,13 @@ NOTE: `Link::getLangLink()` is protected — we replicate its `iso/` logic.
 
 ## Status
 
+* **v1.1.1** (2026‑06‑20) — **PrestaShop Addons validator pass**. Fixed: config.xml
+  `<description>` now matches `$this->description`; `@copyright` tag added (correct
+  `@author`/`@copyright`/`@license` order) to every PHP file; root `.htaccess`
+  (`Options -Indexes`); `form.tpl` intro escaped (no more `nofilter`); all `@Symfony`
+  CS deviations auto-fixed (short arrays, concat spacing, blank line after `<?php`,
+  etc.); `$_MODULE = [];` in all 11 translations (via gen_i18n.php). Distributable zip
+  must use `--prefix=euwithdrawal/`. See "Coding standards" above.
 * **v1.0.0** — built & **LIVE on akvavent.si** 2026‑06‑20. Also fully tested
   end‑to‑end on the test site (install, FO 3‑step flow, both e‑mails, BO register,
   negative + honeypot). PHP‑lint clean; adversarial review (17 agents) = 0 confirmed

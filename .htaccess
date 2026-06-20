@@ -1,0 +1,4 @@
+# Prevent directory listing of this module's files.
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>

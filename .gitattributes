@@ -4,3 +4,9 @@
 *.png binary
 *.jpg binary
 *.gif binary
+
+# Dev-only files: kept in the repo, excluded from the distributable zip
+# (git archive). The Addons package must contain only shippable module files.
+CLAUDE.md export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore

@@ -6,7 +6,7 @@
 	<h1 class="page-heading">{$euw_title|escape:'html':'UTF-8'}</h1>
 
 	{if $euw_intro}
-		<div class="euw-intro rte">{$euw_intro nofilter}</div>
+		<div class="euw-intro rte">{$euw_intro|escape:'html':'UTF-8'|nl2br}</div>
 	{/if}
 
 	{if $euw_errors}

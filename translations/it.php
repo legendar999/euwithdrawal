@@ -1,7 +1,7 @@
 <?php
 
 global $_MODULE;
-$_MODULE = array();
+$_MODULE = [];
 
 $_MODULE['<{euwithdrawal}prestashop>form_20db0bfeecd8fe60533206a2b5e9891a'] = 'Nome';
 $_MODULE['<{euwithdrawal}prestashop>form_8d3f5eff9c40ee315d452392bed5309b'] = 'Cognome';
